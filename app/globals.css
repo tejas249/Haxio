@@ -12,12 +12,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* This dashboard only has a light theme — unlike the default
+   create-next-app globals, don't flip --foreground to near-white on
+   prefers-color-scheme: dark, which made unstyled text invisible on
+   the white cards below. */
 
 body {
   background: var(--background);
