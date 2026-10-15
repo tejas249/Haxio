@@ -12,7 +12,7 @@ const TOOL_META: Record<string, { label: string; icon: typeof Search }> = {
   "tool-searchDocs": { label: "Searching help docs", icon: Search },
   "tool-getAccountStatus": { label: "Looking up account", icon: UserSearch },
   "tool-createTicket": { label: "Opening ticket", icon: Ticket },
-  "tool-issueRefund": { label: "Issuing refund", icon: Banknote },
+  "tool-issueRefund": { label: "Requesting refund approval", icon: Banknote },
 };
 
 function describeInput(toolType: string, input: unknown): string {

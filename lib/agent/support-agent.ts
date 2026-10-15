@@ -3,7 +3,8 @@ import { z } from "zod";
 import { getChatModel } from "@/lib/ai/providers";
 import { search } from "@/lib/rag/search";
 import { getAccount } from "@/lib/data/accounts";
-import { createTicket, attachRefundToTicket } from "@/lib/data/tickets";
+import { createTicket } from "@/lib/data/tickets";
+import { createApproval } from "@/lib/data/approvals";
 
 export const supportAgent = new ToolLoopAgent({
   model: getChatModel(),
@@ -13,7 +14,7 @@ Rules:
 - For any question about policy, how-to steps, or "why" something happened, call searchDocs first and cite the article title in your answer.
 - For any question about a specific customer, call getAccountStatus with their account ID (format ACC-XXXX) before answering. Ask for the account ID if the user hasn't given one.
 - If a customer needs something fixed that you can't resolve yourself, call createTicket so a human can follow up.
-- Only call issueRefund when the account has a billing issue that matches the refund policy from searchDocs, and always also open a ticket for the record.
+- You cannot issue refunds yourself. When a billing issue matches the refund policy from searchDocs, call issueRefund to REQUEST one and always also open a ticket for the record. This only creates a pending request — tell the customer the refund is pending approval from a support lead, never that it has been issued.
 - Be concise. State what you found and what you did, not your internal reasoning.`,
   tools: {
     searchDocs: tool({
@@ -59,7 +60,7 @@ Rules:
 
     issueRefund: tool({
       description:
-        "Issue a refund to a customer's account for a confirmed billing issue, per the refund policy.",
+        "Request a refund for a customer's account for a confirmed billing issue, per the refund policy. This does NOT issue the refund — it creates a pending request that a human support lead must approve on the dashboard before any money moves.",
       inputSchema: z.object({
         accountId: z.string(),
         amountCents: z.number().int().positive(),
@@ -67,16 +68,17 @@ Rules:
         ticketId: z
           .string()
           .optional()
-          .describe("Ticket to attach this refund to, if one was opened"),
+          .describe("Ticket to attach this refund request to, if one was opened"),
       }),
       execute: async ({ accountId, amountCents, reason, ticketId }) => {
         const account = getAccount(accountId);
         if (!account) {
           return { error: `No account found with ID ${accountId}` };
         }
-        if (ticketId) attachRefundToTicket(ticketId, amountCents);
+        const approval = createApproval({ accountId, amountCents, reason, ticketId });
         return {
-          status: "refund_issued",
+          status: "pending_approval",
+          approvalId: approval.id,
           accountId,
           amountCents,
           reason,

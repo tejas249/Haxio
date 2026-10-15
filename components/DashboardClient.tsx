@@ -1,10 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, CircleOff, Ticket as TicketIcon, Users } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  CircleOff,
+  ShieldAlert,
+  Ticket as TicketIcon,
+  Users,
+  X,
+} from "lucide-react";
 import ChatWidget from "./ChatWidget";
 import type { Account } from "@/lib/data/accounts";
 import type { Ticket } from "@/lib/data/tickets";
+import type { RefundApproval } from "@/lib/data/approvals";
 
 function StatTile({
   label,
@@ -32,12 +41,17 @@ const STATUS_STYLES: Record<string, string> = {
   suspended: "bg-red-50 text-red-700",
   open: "bg-amber-50 text-amber-700",
   resolved: "bg-green-50 text-green-700",
+  pending: "bg-amber-50 text-amber-700",
+  approved: "bg-green-50 text-green-700",
+  denied: "bg-red-50 text-red-700",
 };
 
 export default function DashboardClient() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [approvals, setApprovals] = useState<RefundApproval[]>([]);
   const [loading, setLoading] = useState(true);
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
@@ -46,17 +60,20 @@ export default function DashboardClient() {
     let ignore = false;
 
     (async () => {
-      const [accountsRes, ticketsRes] = await Promise.all([
+      const [accountsRes, ticketsRes, approvalsRes] = await Promise.all([
         fetch("/api/accounts"),
         fetch("/api/tickets"),
+        fetch("/api/approvals"),
       ]);
-      const [accountsData, ticketsData] = await Promise.all([
+      const [accountsData, ticketsData, approvalsData] = await Promise.all([
         accountsRes.json(),
         ticketsRes.json(),
+        approvalsRes.json(),
       ]);
       if (ignore) return;
       setAccounts(accountsData);
       setTickets(ticketsData);
+      setApprovals(approvalsData);
       setLoading(false);
     })();
 
@@ -65,26 +82,101 @@ export default function DashboardClient() {
     };
   }, [refreshKey]);
 
+  const resolveApproval = async (id: string, action: "approve" | "deny") => {
+    setResolvingId(id);
+    try {
+      await fetch(`/api/approvals/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      refresh();
+    } finally {
+      setResolvingId(null);
+    }
+  };
+
   const suspended = accounts.filter((a) => a.status === "suspended").length;
   const pastDue = accounts.filter((a) => a.status === "past_due").length;
   const openTickets = tickets.filter((t) => t.status === "open").length;
+  const pendingApprovals = approvals.filter((a) => a.status === "pending");
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <header className="mb-8">
         <h1 className="text-2xl font-semibold text-neutral-900">Support Dashboard</h1>
         <p className="mt-1 text-sm text-neutral-500">
-          Acme Cloud · the agent below can look up these accounts, cite help docs, open
-          tickets, and issue refunds — try it from the chat bubble.
+          Acme Cloud · the agent below can look up these accounts, cite help docs, and
+          open tickets — refunds it proposes wait for approval right here.
         </p>
       </header>
 
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-5">
         <StatTile label="Accounts" value={accounts.length} icon={Users} />
         <StatTile label="Past due" value={pastDue} icon={AlertCircle} />
         <StatTile label="Suspended" value={suspended} icon={CircleOff} />
         <StatTile label="Open tickets" value={openTickets} icon={TicketIcon} />
+        <StatTile
+          label="Pending approvals"
+          value={pendingApprovals.length}
+          icon={ShieldAlert}
+        />
       </div>
+
+      {approvals.length > 0 ? (
+        <section className="mb-8">
+          <h2 className="mb-3 text-sm font-semibold text-neutral-700">
+            Refund approvals
+          </h2>
+          <div className="space-y-2">
+            {approvals.map((a) => (
+              <div
+                key={a.id}
+                className={`flex items-center justify-between rounded-xl border bg-white px-4 py-3 ${
+                  a.status === "pending" ? "border-amber-200" : "border-neutral-200"
+                }`}
+              >
+                <div className="text-sm">
+                  <div className="font-medium text-neutral-900">
+                    ${(a.amountCents / 100).toFixed(2)} for{" "}
+                    <span className="font-mono text-xs text-neutral-500">
+                      {a.accountId}
+                    </span>
+                  </div>
+                  <div className="text-neutral-500">{a.reason}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs ${STATUS_STYLES[a.status]}`}
+                  >
+                    {a.status}
+                  </span>
+                  {a.status === "pending" ? (
+                    <>
+                      <button
+                        onClick={() => resolveApproval(a.id, "approve")}
+                        disabled={resolvingId === a.id}
+                        className="flex items-center gap-1 rounded-full bg-green-600 px-3 py-1 text-xs font-medium text-white disabled:opacity-40"
+                      >
+                        <Check size={14} />
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => resolveApproval(a.id, "deny")}
+                        disabled={resolvingId === a.id}
+                        className="flex items-center gap-1 rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600 disabled:opacity-40"
+                      >
+                        <X size={14} />
+                        Deny
+                      </button>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="mb-8">
         <h2 className="mb-3 text-sm font-semibold text-neutral-700">Accounts</h2>
