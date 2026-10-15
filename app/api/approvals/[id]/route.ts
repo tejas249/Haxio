@@ -12,7 +12,7 @@ export async function PATCH(req: Request, ctx: RouteContext<"/api/approvals/[id]
     );
   }
 
-  const approval = getApproval(id);
+  const approval = await getApproval(id);
   if (!approval) {
     return Response.json({ error: `No approval found with ID ${id}` }, { status: 404 });
   }
@@ -23,12 +23,12 @@ export async function PATCH(req: Request, ctx: RouteContext<"/api/approvals/[id]
     );
   }
 
-  const resolved = resolveApproval(id, action === "approve" ? "approved" : "denied");
+  const resolved = await resolveApproval(id, action === "approve" ? "approved" : "denied");
 
   // Only a real approval moves money (attaches the refund to the ticket).
   // A denial just records the decision — nothing on the ticket changes.
   if (resolved?.status === "approved" && resolved.ticketId) {
-    attachRefundToTicket(resolved.ticketId, resolved.amountCents);
+    await attachRefundToTicket(resolved.ticketId, resolved.amountCents);
   }
 
   return Response.json(resolved);

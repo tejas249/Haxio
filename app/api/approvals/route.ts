@@ -3,5 +3,5 @@ import { listApprovals } from "@/lib/data/approvals";
 
 export async function GET() {
   await connection();
-  return Response.json(listApprovals());
+  return Response.json(await listApprovals());
 }

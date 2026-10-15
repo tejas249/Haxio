@@ -1,3 +1,5 @@
+import { pool } from "@/lib/db";
+
 export type ApprovalStatus = "pending" | "approved" | "denied";
 
 export interface RefundApproval {
@@ -11,47 +13,70 @@ export interface RefundApproval {
   resolvedAt?: string;
 }
 
-// In-memory, mutable — same intentional simplification as tickets.ts.
-const approvals: RefundApproval[] = [];
+interface ApprovalRow {
+  id: string;
+  account_id: string;
+  amount_cents: number;
+  reason: string;
+  ticket_id: string | null;
+  status: ApprovalStatus;
+  requested_at: Date;
+  resolved_at: Date | null;
+}
 
-let nextId = 1;
+function toApproval(row: ApprovalRow): RefundApproval {
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    amountCents: row.amount_cents,
+    reason: row.reason,
+    ticketId: row.ticket_id ?? undefined,
+    status: row.status,
+    requestedAt: row.requested_at.toISOString(),
+    resolvedAt: row.resolved_at?.toISOString(),
+  };
+}
 
-export function listApprovals(): RefundApproval[] {
-  return [...approvals].sort(
-    (a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime(),
+export async function listApprovals(): Promise<RefundApproval[]> {
+  const { rows } = await pool.query<ApprovalRow>(
+    "select * from refund_approvals order by requested_at desc",
   );
+  return rows.map(toApproval);
 }
 
-export function getApproval(id: string): RefundApproval | undefined {
-  return approvals.find((a) => a.id === id);
+export async function getApproval(id: string): Promise<RefundApproval | undefined> {
+  const { rows } = await pool.query<ApprovalRow>(
+    "select * from refund_approvals where id = $1",
+    [id],
+  );
+  return rows[0] ? toApproval(rows[0]) : undefined;
 }
 
-export function createApproval(input: {
+export async function createApproval(input: {
   accountId: string;
   amountCents: number;
   reason: string;
   ticketId?: string;
-}): RefundApproval {
-  const approval: RefundApproval = {
-    id: `APR-${nextId++}`,
-    accountId: input.accountId,
-    amountCents: input.amountCents,
-    reason: input.reason,
-    ticketId: input.ticketId,
-    status: "pending",
-    requestedAt: new Date().toISOString(),
-  };
-  approvals.push(approval);
-  return approval;
+}): Promise<RefundApproval> {
+  const { rows } = await pool.query<ApprovalRow>(
+    `insert into refund_approvals (account_id, amount_cents, reason, ticket_id)
+     values ($1, $2, $3, $4)
+     returning *`,
+    [input.accountId, input.amountCents, input.reason, input.ticketId ?? null],
+  );
+  return toApproval(rows[0]);
 }
 
-export function resolveApproval(
+export async function resolveApproval(
   id: string,
   decision: "approved" | "denied",
-): RefundApproval | undefined {
-  const approval = approvals.find((a) => a.id === id);
-  if (!approval || approval.status !== "pending") return undefined;
-  approval.status = decision;
-  approval.resolvedAt = new Date().toISOString();
-  return approval;
+): Promise<RefundApproval | undefined> {
+  const { rows } = await pool.query<ApprovalRow>(
+    `update refund_approvals
+     set status = $2, resolved_at = now()
+     where id = $1 and status = 'pending'
+     returning *`,
+    [id, decision],
+  );
+  return rows[0] ? toApproval(rows[0]) : undefined;
 }

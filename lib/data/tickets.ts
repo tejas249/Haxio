@@ -1,3 +1,5 @@
+import { pool } from "@/lib/db";
+
 export type TicketPriority = "low" | "normal" | "high";
 export type TicketStatus = "open" | "resolved";
 
@@ -12,50 +14,59 @@ export interface Ticket {
   refundIssuedCents?: number;
 }
 
-// In-memory mutable store. Resets whenever the dev/server process
-// restarts — intentional for this demo. Swap for a real table (e.g.
-// Neon Postgres) to persist across restarts/instances.
-const tickets: Ticket[] = [
-  {
-    id: "TCK-4001",
-    accountId: "ACC-1002",
-    subject: "Invoice looks wrong",
-    description: "Customer flagged a possible duplicate charge on INV-7742.",
-    priority: "normal",
-    status: "open",
-    createdAt: "2026-10-09T13:00:00Z",
-  },
-];
-
-let nextId = 4002;
-
-export function listTickets(): Ticket[] {
-  return [...tickets].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+interface TicketRow {
+  id: string;
+  account_id: string;
+  subject: string;
+  description: string;
+  priority: TicketPriority;
+  status: TicketStatus;
+  created_at: Date;
+  refund_issued_cents: number | null;
 }
 
-export function createTicket(input: {
+function toTicket(row: TicketRow): Ticket {
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    subject: row.subject,
+    description: row.description,
+    priority: row.priority,
+    status: row.status,
+    createdAt: row.created_at.toISOString(),
+    refundIssuedCents: row.refund_issued_cents ?? undefined,
+  };
+}
+
+export async function listTickets(): Promise<Ticket[]> {
+  const { rows } = await pool.query<TicketRow>(
+    "select * from tickets order by created_at desc",
+  );
+  return rows.map(toTicket);
+}
+
+export async function createTicket(input: {
   accountId: string;
   subject: string;
   description: string;
   priority?: TicketPriority;
-}): Ticket {
-  const ticket: Ticket = {
-    id: `TCK-${nextId++}`,
-    accountId: input.accountId,
-    subject: input.subject,
-    description: input.description,
-    priority: input.priority ?? "normal",
-    status: "open",
-    createdAt: new Date().toISOString(),
-  };
-  tickets.push(ticket);
-  return ticket;
+}): Promise<Ticket> {
+  const { rows } = await pool.query<TicketRow>(
+    `insert into tickets (account_id, subject, description, priority)
+     values ($1, $2, $3, $4)
+     returning *`,
+    [input.accountId, input.subject, input.description, input.priority ?? "normal"],
+  );
+  return toTicket(rows[0]);
 }
 
-export function attachRefundToTicket(ticketId: string, amountCents: number) {
-  const ticket = tickets.find((t) => t.id === ticketId);
-  if (ticket) ticket.refundIssuedCents = amountCents;
-  return ticket;
+export async function attachRefundToTicket(
+  ticketId: string,
+  amountCents: number,
+): Promise<Ticket | undefined> {
+  const { rows } = await pool.query<TicketRow>(
+    `update tickets set refund_issued_cents = $2 where id = $1 returning *`,
+    [ticketId, amountCents],
+  );
+  return rows[0] ? toTicket(rows[0]) : undefined;
 }

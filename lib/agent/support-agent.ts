@@ -38,7 +38,7 @@ Rules:
         accountId: z.string().describe("Account ID, e.g. ACC-1002"),
       }),
       execute: async ({ accountId }) => {
-        const account = getAccount(accountId);
+        const account = await getAccount(accountId);
         if (!account) {
           return { error: `No account found with ID ${accountId}` };
         }
@@ -55,7 +55,7 @@ Rules:
         description: z.string(),
         priority: z.enum(["low", "normal", "high"]).default("normal"),
       }),
-      execute: async (input) => createTicket(input),
+      execute: async (input) => await createTicket(input),
     }),
 
     issueRefund: tool({
@@ -71,11 +71,11 @@ Rules:
           .describe("Ticket to attach this refund request to, if one was opened"),
       }),
       execute: async ({ accountId, amountCents, reason, ticketId }) => {
-        const account = getAccount(accountId);
+        const account = await getAccount(accountId);
         if (!account) {
           return { error: `No account found with ID ${accountId}` };
         }
-        const approval = createApproval({ accountId, amountCents, reason, ticketId });
+        const approval = await createApproval({ accountId, amountCents, reason, ticketId });
         return {
           status: "pending_approval",
           approvalId: approval.id,

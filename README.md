@@ -14,7 +14,7 @@ has to approve it on the dashboard before any money moves.
 ## What's here
 
 - **Dashboard** (`/dashboard`) — accounts, tickets, and pending refund
-  approvals, mock data
+  approvals, backed by Neon Postgres (`lib/db.ts`, `db/schema.sql`)
 - **Chat widget** — floating bubble, bottom right, open it and ask something
 - **Agent** (`lib/agent/support-agent.ts`) — a `ToolLoopAgent` (AI SDK) with
   four tools: `searchDocs`, `getAccountStatus`, `createTicket`, `issueRefund`
@@ -44,6 +44,25 @@ LLM_PROVIDER=anthropic        # or "openai"
 ANTHROPIC_API_KEY=sk-ant-...  # whichever matches LLM_PROVIDER
 ```
 
+### Database
+
+Postgres is on Neon. If you have the [Neon CLI](https://neon.com/docs/cli/install)
+and are signed in:
+
+```bash
+neon link --org-id <your-org-id> --project-name DeskCopilot --region-id aws-us-east-2
+npm run db:setup   # applies db/schema.sql, then db/seed.sql
+```
+
+`neon link` writes `DATABASE_URL` (and friends) straight into `.env.local` —
+nothing to copy by hand. Without the CLI, point `DATABASE_URL` in
+`.env.local` at any Postgres instance and run `npm run db:setup` the same
+way; the schema is plain SQL, nothing Neon-specific.
+
+`db/schema.sql` is idempotent (`IF NOT EXISTS` everywhere) and `db/seed.sql`
+truncates before inserting, so `npm run db:setup` is safe to re-run any time
+you want to reset back to the demo's starting state.
+
 ```bash
 npm run dev
 ```
@@ -68,10 +87,6 @@ each turn. Approving/denying a refund on the dashboard does the same.
 
 ## Known simplifications (intentional, for a demo)
 
-- **In-memory data** (`lib/data/accounts.ts`, `lib/data/tickets.ts`,
-  `lib/data/approvals.ts`) — resets on server restart. Swap for a real
-  Postgres table (Neon is a good fit — branch-per-PR, pgvector if you
-  upgrade the RAG step) when this becomes more than a demo.
 - **Lexical RAG, not embeddings** — accurate enough for a handful of docs;
   won't scale to a real knowledge base. The retrieval contract
   (`search(query): SearchResult[]`) is isolated so swapping it is a
@@ -80,4 +95,5 @@ each turn. Approving/denying a refund on the dashboard does the same.
 ## Stack
 
 Next.js 16 (App Router, Cache Components) · Vercel AI SDK (`ai`, `@ai-sdk/react`,
-`@ai-sdk/anthropic`, `@ai-sdk/openai`) · Tailwind CSS v4 · TypeScript
+`@ai-sdk/anthropic`, `@ai-sdk/openai`) · Neon Postgres (`pg`) · Tailwind CSS v4 ·
+TypeScript

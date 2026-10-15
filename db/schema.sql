@@ -1,0 +1,44 @@
+-- DeskCopilot schema. Human-readable IDs (ACC-1001, TCK-4002, APR-3) are
+-- kept as primary keys to match the app's existing contract — tickets and
+-- approvals get theirs from a sequence via a DEFAULT expression, accounts
+-- are seeded with fixed IDs since the app never creates new accounts.
+
+create sequence if not exists ticket_id_seq start with 4002;
+create sequence if not exists approval_id_seq start with 1;
+
+create table if not exists accounts (
+  id text primary key,
+  company text not null,
+  contact_email text not null,
+  plan text not null check (plan in ('starter', 'pro', 'enterprise')),
+  status text not null check (status in ('active', 'past_due', 'suspended')),
+  open_invoice_cents integer not null default 0,
+  suspended_reason text,
+  last_login timestamptz not null
+);
+
+create table if not exists tickets (
+  id text primary key default ('TCK-' || nextval('ticket_id_seq')),
+  account_id text not null references accounts (id),
+  subject text not null,
+  description text not null,
+  priority text not null default 'normal' check (priority in ('low', 'normal', 'high')),
+  status text not null default 'open' check (status in ('open', 'resolved')),
+  created_at timestamptz not null default now(),
+  refund_issued_cents integer
+);
+
+create table if not exists refund_approvals (
+  id text primary key default ('APR-' || nextval('approval_id_seq')),
+  account_id text not null references accounts (id),
+  amount_cents integer not null,
+  reason text not null,
+  ticket_id text references tickets (id),
+  status text not null default 'pending' check (status in ('pending', 'approved', 'denied')),
+  requested_at timestamptz not null default now(),
+  resolved_at timestamptz
+);
+
+create index if not exists idx_tickets_account on tickets (account_id);
+create index if not exists idx_approvals_account on refund_approvals (account_id);
+create index if not exists idx_approvals_status on refund_approvals (status);
