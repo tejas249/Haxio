@@ -7,12 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:setup": "node --env-file=.env.local scripts/db-setup.mjs"
+    "db:setup": "node --env-file=.env.local scripts/db-setup.mjs",
+    "db:embed": "node --env-file=.env.local scripts/embed-docs.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.79",
     "@ai-sdk/openai": "^4.0.93",
     "@ai-sdk/react": "^4.0.143",
+    "@huggingface/transformers": "^4.3.1",
     "@neon/config": "^1.9.1",
     "@neon/env": "^1.6.2",
     "ai": "^7.0.140",

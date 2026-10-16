@@ -23,10 +23,12 @@ has to approve it on the dashboard before any money moves.
   a pending `RefundApproval` that only `PATCH /api/approvals/[id]` (the
   dashboard's Approve/Deny buttons) can resolve. A denial leaves the ticket
   untouched; an approval attaches the refund to the ticket
-- **RAG** (`lib/rag/search.ts`) — TF-IDF retrieval over markdown docs in
-  `lib/data/docs/`. No embeddings API call, so the whole thing runs with a
-  single LLM key. Swap this module for real vector search later — it's the
-  only thing the agent depends on
+- **RAG** (`lib/rag/search.ts`, `lib/rag/embed.ts`) — real vector search:
+  markdown docs in `lib/data/docs/` are embedded with a local model
+  ([`onnx-community/all-MiniLM-L6-v2-ONNX`](https://huggingface.co/onnx-community/all-MiniLM-L6-v2-ONNX)
+  via `@huggingface/transformers`, CPU-only, no API key) into a
+  `vector(384)` column, queried with Neon's `lakebase_vector` extension
+  (pgvector-compatible) by cosine distance
 - **Provider switch** (`lib/ai/providers.ts`) — reads `LLM_PROVIDER` to pick
   Claude or GPT for the same agent code
 
@@ -52,16 +54,19 @@ and are signed in:
 ```bash
 neon link --org-id <your-org-id> --project-name DeskCopilot --region-id aws-us-east-2
 npm run db:setup   # applies db/schema.sql, then db/seed.sql
+npm run db:embed   # downloads the local model once, embeds lib/data/docs/*.md
 ```
 
 `neon link` writes `DATABASE_URL` (and friends) straight into `.env.local` —
-nothing to copy by hand. Without the CLI, point `DATABASE_URL` in
-`.env.local` at any Postgres instance and run `npm run db:setup` the same
-way; the schema is plain SQL, nothing Neon-specific.
+nothing to copy by hand. `db/schema.sql` enables `lakebase_vector`, Neon's
+pgvector-compatible extension — on a non-Neon Postgres, swap that one line
+for plain `pgvector` (`CREATE EXTENSION vector`) and the `USING lakebase_ann`
+index for `USING ivfflat` or `hnsw`; everything else is standard SQL.
 
 `db/schema.sql` is idempotent (`IF NOT EXISTS` everywhere) and `db/seed.sql`
 truncates before inserting, so `npm run db:setup` is safe to re-run any time
-you want to reset back to the demo's starting state.
+you want to reset back to the demo's starting state. `db:embed` upserts by
+filename, so it's safe to re-run too (e.g. after editing a doc).
 
 ```bash
 npm run dev
@@ -87,13 +92,14 @@ each turn. Approving/denying a refund on the dashboard does the same.
 
 ## Known simplifications (intentional, for a demo)
 
-- **Lexical RAG, not embeddings** — accurate enough for a handful of docs;
-  won't scale to a real knowledge base. The retrieval contract
-  (`search(query): SearchResult[]`) is isolated so swapping it is a
-  one-file change.
+- **A tiny, general-purpose embedding model** — `all-MiniLM-L6-v2` (384 dims)
+  is fast and needs no API key, but a larger or domain-tuned model would
+  rank closely-related docs more precisely at real knowledge-base scale.
+  Swapping it means re-running `db:embed` and matching the new dimension
+  in `db/schema.sql`'s `vector(384)` column.
 
 ## Stack
 
 Next.js 16 (App Router, Cache Components) · Vercel AI SDK (`ai`, `@ai-sdk/react`,
-`@ai-sdk/anthropic`, `@ai-sdk/openai`) · Neon Postgres (`pg`) · Tailwind CSS v4 ·
-TypeScript
+`@ai-sdk/anthropic`, `@ai-sdk/openai`) · Neon Postgres (`pg`, `lakebase_vector`) ·
+`@huggingface/transformers` (local embeddings) · Tailwind CSS v4 · TypeScript

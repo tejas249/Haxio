@@ -24,7 +24,7 @@ Rules:
         query: z.string().describe("The user's question, in plain words"),
       }),
       execute: async ({ query }) => {
-        const results = search(query);
+        const results = await search(query);
         return results.length > 0
           ? results
           : { message: "No matching docs found." };

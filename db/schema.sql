@@ -42,3 +42,19 @@ create table if not exists refund_approvals (
 create index if not exists idx_tickets_account on tickets (account_id);
 create index if not exists idx_approvals_account on refund_approvals (account_id);
 create index if not exists idx_approvals_status on refund_approvals (status);
+
+-- RAG knowledge base: real vector search over lib/data/docs/*.md.
+-- 384 dims matches Xenova/all-MiniLM-L6-v2 (lib/rag/embed.ts) — a small
+-- local embedding model, so this runs with no embeddings API key or
+-- paid Neon plan (the AI Gateway's embeddings endpoint needs one).
+create extension if not exists lakebase_vector cascade;
+
+create table if not exists kb_docs (
+  id text primary key, -- source filename, e.g. 'api-keys.md'
+  title text not null,
+  content text not null,
+  embedding vector(384)
+);
+
+create index if not exists kb_docs_embedding_ann on kb_docs
+  using lakebase_ann (embedding vector_cosine_ops);
