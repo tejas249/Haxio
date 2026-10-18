@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "db:setup": "node --env-file=.env.local scripts/db-setup.mjs",
     "db:embed": "node --env-file=.env.local scripts/embed-docs.mjs"
