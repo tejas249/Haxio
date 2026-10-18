@@ -90,6 +90,19 @@ Any action the agent takes (new ticket, refund request) shows up on the
 dashboard within a few seconds — the chat widget refetches the tables after
 each turn. Approving/denying a refund on the dashboard does the same.
 
+## Development
+
+```bash
+npm run lint        # eslint
+npm run typecheck   # tsc --noEmit
+npm run test        # vitest — unit tests for lib/data/*.ts and lib/rag/search.ts
+npm run build       # next build — needs no env vars at all, DB calls are all runtime
+```
+
+All four run in CI on every push and PR to `main` ([.github/workflows/ci.yml](.github/workflows/ci.yml))
+with zero required secrets. Tests mock `lib/db.ts`'s pool and `lib/rag/embed.ts`'s
+embedder, so they run fully offline — no live Postgres or model download needed.
+
 ## Known simplifications (intentional, for a demo)
 
 - **A tiny, general-purpose embedding model** — `all-MiniLM-L6-v2` (384 dims)
@@ -102,4 +115,5 @@ each turn. Approving/denying a refund on the dashboard does the same.
 
 Next.js 16 (App Router, Cache Components) · Vercel AI SDK (`ai`, `@ai-sdk/react`,
 `@ai-sdk/anthropic`, `@ai-sdk/openai`) · Neon Postgres (`pg`, `lakebase_vector`) ·
-`@huggingface/transformers` (local embeddings) · Tailwind CSS v4 · TypeScript
+`@huggingface/transformers` (local embeddings) · Tailwind CSS v4 · TypeScript ·
+Vitest · GitHub Actions
