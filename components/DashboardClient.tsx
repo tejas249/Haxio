@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  Activity,
   AlertCircle,
   Check,
   CircleOff,
@@ -14,6 +15,7 @@ import ChatWidget from "./ChatWidget";
 import type { Account } from "@/lib/data/accounts";
 import type { Ticket } from "@/lib/data/tickets";
 import type { RefundApproval } from "@/lib/data/approvals";
+import type { AgentRun } from "@/lib/data/agent-runs";
 
 function StatTile({
   label,
@@ -44,12 +46,27 @@ const STATUS_STYLES: Record<string, string> = {
   pending: "bg-amber-50 text-amber-700",
   approved: "bg-green-50 text-green-700",
   denied: "bg-red-50 text-red-700",
+  completed: "bg-green-50 text-green-700",
+  failed: "bg-red-50 text-red-700",
+  aborted: "bg-neutral-100 text-neutral-600",
+  unknown: "bg-neutral-100 text-neutral-600",
 };
+
+function timeAgo(iso: string): string {
+  const seconds = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
 
 export default function DashboardClient() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [approvals, setApprovals] = useState<RefundApproval[]>([]);
+  const [agentRuns, setAgentRuns] = useState<AgentRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -60,20 +77,23 @@ export default function DashboardClient() {
     let ignore = false;
 
     (async () => {
-      const [accountsRes, ticketsRes, approvalsRes] = await Promise.all([
+      const [accountsRes, ticketsRes, approvalsRes, agentRunsRes] = await Promise.all([
         fetch("/api/accounts"),
         fetch("/api/tickets"),
         fetch("/api/approvals"),
+        fetch("/api/agent-runs"),
       ]);
-      const [accountsData, ticketsData, approvalsData] = await Promise.all([
+      const [accountsData, ticketsData, approvalsData, agentRunsData] = await Promise.all([
         accountsRes.json(),
         ticketsRes.json(),
         approvalsRes.json(),
+        agentRunsRes.json(),
       ]);
       if (ignore) return;
       setAccounts(accountsData);
       setTickets(ticketsData);
       setApprovals(approvalsData);
+      setAgentRuns(agentRunsData);
       setLoading(false);
     })();
 
@@ -111,7 +131,7 @@ export default function DashboardClient() {
         </p>
       </header>
 
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-5">
+      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-6">
         <StatTile label="Accounts" value={accounts.length} icon={Users} />
         <StatTile label="Past due" value={pastDue} icon={AlertCircle} />
         <StatTile label="Suspended" value={suspended} icon={CircleOff} />
@@ -121,6 +141,7 @@ export default function DashboardClient() {
           value={pendingApprovals.length}
           icon={ShieldAlert}
         />
+        <StatTile label="Agent runs" value={agentRuns.length} icon={Activity} />
       </div>
 
       {approvals.length > 0 ? (
@@ -267,6 +288,53 @@ export default function DashboardClient() {
           </table>
         </div>
       </section>
+
+      {agentRuns.length > 0 ? (
+        <section className="mt-8">
+          <h2 className="mb-3 text-sm font-semibold text-neutral-700">Agent activity</h2>
+          <div className="space-y-2">
+            {agentRuns.map((run) => (
+              <div
+                key={run.id}
+                className="rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm"
+              >
+                <div className="mb-1 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {run.outcome ? (
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs ${
+                          STATUS_STYLES[run.outcome] ?? "bg-neutral-100 text-neutral-600"
+                        }`}
+                      >
+                        {run.outcome}
+                      </span>
+                    ) : null}
+                    {run.toolCalls.map((call, i) => (
+                      <span
+                        key={i}
+                        className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-500"
+                      >
+                        {call.name}
+                      </span>
+                    ))}
+                  </div>
+                  <span className="text-xs text-neutral-400">
+                    {timeAgo(run.createdAt)}
+                    {run.durationMs != null ? ` · ${(run.durationMs / 1000).toFixed(1)}s` : ""}
+                  </span>
+                </div>
+                <div className="text-neutral-900">{run.userMessage}</div>
+                {run.assistantText ? (
+                  <div className="mt-1 text-neutral-500">{run.assistantText}</div>
+                ) : null}
+                {run.errorMessage ? (
+                  <div className="mt-1 text-red-600">{run.errorMessage}</div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <ChatWidget onActionTaken={refresh} />
     </div>

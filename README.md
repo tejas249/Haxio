@@ -31,6 +31,12 @@ has to approve it on the dashboard before any money moves.
   (pgvector-compatible) by cosine distance
 - **Provider switch** (`lib/ai/providers.ts`) — reads `LLM_PROVIDER` to pick
   Claude or GPT for the same agent code
+- **Agent activity log** (`lib/data/agent-runs.ts`, dashboard's "Agent
+  activity" section) — every chat turn is logged to Postgres on completion
+  (`onEnd` in `app/api/chat/route.ts`): the user's message, the agent's
+  reply, every tool it called with input/output, outcome, and latency.
+  Logging is best-effort and wrapped in try/catch — a DB hiccup here never
+  breaks the chat response itself
 
 ## Setup
 

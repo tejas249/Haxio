@@ -58,3 +58,20 @@ create table if not exists kb_docs (
 
 create index if not exists kb_docs_embedding_ann on kb_docs
   using lakebase_ann (embedding vector_cosine_ops);
+
+-- Observability: one row per chat turn the agent completes. `integer`
+-- identity, not the app's human-readable ID pattern — this is a log
+-- table, not a business entity anything else references.
+create table if not exists agent_runs (
+  id integer generated always as identity primary key,
+  created_at timestamptz not null default now(),
+  user_message text not null,
+  assistant_text text,
+  tool_calls jsonb not null default '[]',
+  finish_reason text,
+  outcome text,
+  error_message text,
+  duration_ms integer
+);
+
+create index if not exists idx_agent_runs_created_at on agent_runs (created_at desc);
