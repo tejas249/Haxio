@@ -30,7 +30,8 @@ has to approve it on the dashboard before any money moves.
   `vector(384)` column, queried with Neon's `lakebase_vector` extension
   (pgvector-compatible) by cosine distance
 - **Provider switch** (`lib/ai/providers.ts`) — reads `LLM_PROVIDER` to pick
-  Claude or GPT for the same agent code
+  Claude, GPT, or Groq (free tier, no card — good for testing the agent
+  without a paid key) for the same agent code
 - **Agent activity log** (`lib/data/agent-runs.ts`, dashboard's "Agent
   activity" section) — every chat turn is logged to Postgres on completion
   (`onEnd` in `app/api/chat/route.ts`): the user's message, the agent's
@@ -54,8 +55,8 @@ cp .env.example .env.local
 Edit `.env.local`:
 
 ```
-LLM_PROVIDER=anthropic        # or "openai"
-ANTHROPIC_API_KEY=sk-ant-...  # whichever matches LLM_PROVIDER
+LLM_PROVIDER=anthropic         # or "openai", or "groq" (free tier — console.groq.com)
+ANTHROPIC_API_KEY=sk-ant-...   # whichever matches LLM_PROVIDER
 ADMIN_PASSWORD=pick-something  # logs you into /dashboard
 SESSION_SECRET=...             # node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
@@ -129,6 +130,6 @@ embedder, so they run fully offline — no live Postgres or model download neede
 ## Stack
 
 Next.js 16 (App Router, Cache Components) · Vercel AI SDK (`ai`, `@ai-sdk/react`,
-`@ai-sdk/anthropic`, `@ai-sdk/openai`) · Neon Postgres (`pg`, `lakebase_vector`) ·
+`@ai-sdk/anthropic`, `@ai-sdk/openai`, `@ai-sdk/groq`) · Neon Postgres (`pg`, `lakebase_vector`) ·
 `@huggingface/transformers` (local embeddings) · Tailwind CSS v4 · TypeScript ·
 Vitest · GitHub Actions
