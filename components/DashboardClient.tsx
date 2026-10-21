@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Activity,
   AlertCircle,
   Check,
   CircleOff,
+  LogOut,
   ShieldAlert,
   Ticket as TicketIcon,
   Users,
@@ -63,6 +65,7 @@ function timeAgo(iso: string): string {
 }
 
 export default function DashboardClient() {
+  const router = useRouter();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [approvals, setApprovals] = useState<RefundApproval[]>([]);
@@ -116,6 +119,12 @@ export default function DashboardClient() {
     }
   };
 
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+    router.refresh();
+  };
+
   const suspended = accounts.filter((a) => a.status === "suspended").length;
   const pastDue = accounts.filter((a) => a.status === "past_due").length;
   const openTickets = tickets.filter((t) => t.status === "open").length;
@@ -123,12 +132,21 @@ export default function DashboardClient() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
-      <header className="mb-8">
-        <h1 className="text-2xl font-semibold text-neutral-900">Support Dashboard</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Acme Cloud · the agent below can look up these accounts, cite help docs, and
-          open tickets — refunds it proposes wait for approval right here.
-        </p>
+      <header className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-neutral-900">Support Dashboard</h1>
+          <p className="mt-1 text-sm text-neutral-500">
+            Acme Cloud · the agent below can look up these accounts, cite help docs, and
+            open tickets — refunds it proposes wait for approval right here.
+          </p>
+        </div>
+        <button
+          onClick={logout}
+          className="flex shrink-0 items-center gap-1.5 rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-50"
+        >
+          <LogOut size={14} />
+          Log out
+        </button>
       </header>
 
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-6">

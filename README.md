@@ -37,6 +37,12 @@ has to approve it on the dashboard before any money moves.
   reply, every tool it called with input/output, outcome, and latency.
   Logging is best-effort and wrapped in try/catch — a DB hiccup here never
   breaks the chat response itself
+- **Login gate** (`proxy.ts`, `lib/auth/session.ts`, `/login`) — one shared
+  admin password protects `/dashboard` and every `/api/*` route (except
+  `/api/auth/*`) with a signed, expiring session cookie. The real
+  enforcement is in `proxy.ts` on the server for every request — not just a
+  client-side redirect — verified with `curl`: hit any API route without a
+  session and it's a 401, not just a hidden page
 
 ## Setup
 
@@ -50,6 +56,8 @@ Edit `.env.local`:
 ```
 LLM_PROVIDER=anthropic        # or "openai"
 ANTHROPIC_API_KEY=sk-ant-...  # whichever matches LLM_PROVIDER
+ADMIN_PASSWORD=pick-something  # logs you into /dashboard
+SESSION_SECRET=...             # node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 ### Database
@@ -78,7 +86,8 @@ filename, so it's safe to re-run too (e.g. after editing a doc).
 npm run dev
 ```
 
-Open http://localhost:3000 — it redirects to `/dashboard`.
+Open http://localhost:3000 — it redirects to `/dashboard`, which redirects to
+`/login` until you sign in with `ADMIN_PASSWORD`.
 
 ## Try it
 
