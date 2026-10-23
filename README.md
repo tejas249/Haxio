@@ -13,6 +13,8 @@ has to approve it on the dashboard before any money moves.
 
 ## What's here
 
+- **Landing page** (`/`) — public, no login required; explains the product
+  and links to the demo
 - **Dashboard** (`/dashboard`) — accounts, tickets, and pending refund
   approvals, backed by Neon Postgres (`lib/db.ts`, `db/schema.sql`)
 - **Chat widget** — floating bubble, bottom right, open it and ask something
@@ -87,8 +89,9 @@ filename, so it's safe to re-run too (e.g. after editing a doc).
 npm run dev
 ```
 
-Open http://localhost:3000 — it redirects to `/dashboard`, which redirects to
-`/login` until you sign in with `ADMIN_PASSWORD`.
+Open http://localhost:3000 for the landing page, or jump straight to
+`/dashboard` — it redirects to `/login` until you sign in with
+`ADMIN_PASSWORD`.
 
 ## Try it
 
