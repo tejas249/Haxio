@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import HaxioMark from "@/components/HaxioMark";
+import SiteFooter from "@/components/SiteFooter";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -36,7 +37,8 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-neutral-50 px-6">
+    <div className="flex min-h-screen flex-col bg-neutral-50">
+      <main className="flex flex-1 flex-col items-center justify-center px-6 py-16">
       <Link
         href="/"
         className="mb-6 flex items-center gap-1.5 text-sm font-medium text-neutral-500 hover:text-neutral-700"
@@ -76,6 +78,8 @@ export default function LoginPage() {
           {submitting ? "Signing in…" : "Sign in"}
         </button>
       </form>
-    </main>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }

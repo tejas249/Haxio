@@ -1,9 +1,10 @@
+import type { Metadata } from "next";
 import DashboardClient from "@/components/DashboardClient";
 
+export const metadata: Metadata = {
+  title: "Support Dashboard",
+};
+
 export default function DashboardPage() {
-  return (
-    <main className="min-h-screen bg-neutral-50">
-      <DashboardClient />
-    </main>
-  );
+  return <DashboardClient />;
 }

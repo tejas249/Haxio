@@ -1,10 +1,12 @@
 import Link from "next/link";
 import HaxioMark from "@/components/HaxioMark";
+import SiteFooter from "@/components/SiteFooter";
 import {
   ArrowRight,
   Bot,
   Code2,
   Database,
+  MessageSquare,
   ShieldCheck,
   Sparkles,
   Workflow,
@@ -45,15 +47,36 @@ const STACK = [
   "TypeScript",
 ];
 
+const STEPS = [
+  {
+    step: "01",
+    title: "Ask in plain language",
+    description:
+      "Open the chat widget on the dashboard and describe the issue — a suspended account, a billing question, a refund request.",
+  },
+  {
+    step: "02",
+    title: "The agent investigates",
+    description:
+      "It calls real tools live: searches help docs by vector similarity, pulls up the account, and drafts a ticket — you watch every call happen.",
+  },
+  {
+    step: "03",
+    title: "A human signs off on money",
+    description:
+      "If a refund is warranted, the agent proposes one and stops. A support lead approves or denies it on the dashboard before anything moves.",
+  },
+];
+
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white">
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-6">
+    <div className="flex min-h-screen flex-col bg-white">
+      <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2">
           <HaxioMark size={32} />
           <span className="text-sm font-semibold text-neutral-900">Haxio</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <a
             href="https://github.com/tejas249/deskcopilot"
             target="_blank"
@@ -61,7 +84,7 @@ export default function Home() {
             className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900"
           >
             <Code2 size={16} />
-            Source
+            <span className="hidden sm:inline">Source</span>
           </a>
           <Link
             href="/login"
@@ -72,39 +95,49 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="mx-auto max-w-3xl px-6 pb-20 pt-16 text-center sm:pt-24">
-        <div className="mb-6 inline-flex items-center gap-1.5 rounded-full bg-brand-light px-3 py-1 text-xs font-medium text-brand-dark">
-          <Sparkles size={13} />
-          Agent + RAG, for real
+      <main className="flex-1">
+      <section className="relative overflow-hidden">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 -top-40 -z-10 flex justify-center"
+        >
+          <div className="h-[480px] w-[480px] rounded-full bg-brand-light opacity-60 blur-3xl sm:h-[640px] sm:w-[640px]" />
         </div>
-        <h1 className="text-4xl font-semibold tracking-tight text-neutral-900 sm:text-5xl">
-          A support agent that
-          <br />
-          <span className="text-brand">actually does things</span>
-        </h1>
-        <p className="mx-auto mt-5 max-w-xl text-base text-neutral-500 sm:text-lg">
-          Haxio is a demo support desk for a fictional SaaS. The agent
-          searches real help docs, looks up accounts, opens tickets, and
-          proposes refunds — every action visible, every refund held for
-          human approval.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-brand/30 transition hover:bg-brand-dark hover:shadow-md"
-          >
-            View live demo
-            <ArrowRight size={16} />
-          </Link>
-          <a
-            href="https://github.com/tejas249/deskcopilot"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-6 py-3 text-sm font-semibold text-neutral-700 shadow-sm transition hover:border-neutral-300 hover:bg-neutral-50"
-          >
-            <Code2 size={16} />
-            View source
-          </a>
+
+        <div className="mx-auto max-w-3xl px-6 pb-20 pt-16 text-center sm:pt-24">
+          <div className="mb-6 inline-flex items-center gap-1.5 rounded-full bg-brand-light px-3 py-1 text-xs font-medium text-brand-dark">
+            <Sparkles size={13} />
+            Agent + RAG, for real
+          </div>
+          <h1 className="text-4xl font-semibold tracking-tight text-neutral-900 sm:text-5xl">
+            A support agent that
+            <br />
+            <span className="text-brand">actually does things</span>
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-base text-neutral-500 sm:text-lg">
+            Haxio is a demo support desk for a fictional SaaS. The agent
+            searches real help docs, looks up accounts, opens tickets, and
+            proposes refunds — every action visible, every refund held for
+            human approval.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-brand/30 transition hover:bg-brand-dark hover:shadow-md"
+            >
+              View live demo
+              <ArrowRight size={16} />
+            </Link>
+            <a
+              href="https://github.com/tejas249/deskcopilot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-6 py-3 text-sm font-semibold text-neutral-700 shadow-sm transition hover:border-neutral-300 hover:bg-neutral-50"
+            >
+              <Code2 size={16} />
+              View source
+            </a>
+          </div>
         </div>
       </section>
 
@@ -121,6 +154,22 @@ export default function Home() {
               <h3 className="mb-1.5 text-base font-semibold text-neutral-900">
                 {title}
               </h3>
+              <p className="text-sm text-neutral-500">{description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-6 pb-20">
+        <div className="mb-10 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-neutral-400">
+          <MessageSquare size={14} />
+          How it works
+        </div>
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+          {STEPS.map(({ step, title, description }) => (
+            <div key={step}>
+              <div className="mb-3 text-sm font-semibold text-brand">{step}</div>
+              <h3 className="mb-1.5 text-base font-semibold text-neutral-900">{title}</h3>
               <p className="text-sm text-neutral-500">{description}</p>
             </div>
           ))}
@@ -145,10 +194,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+      </main>
 
-      <footer className="mx-auto max-w-5xl px-6 py-8 text-center text-xs text-neutral-400">
-        A portfolio demo — Acme Cloud is fictional, data resets on request.
-      </footer>
-    </main>
+      <SiteFooter />
+    </div>
   );
 }

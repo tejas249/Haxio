@@ -36,16 +36,16 @@ export default function ChatWidget({ onActionTaken }: { onActionTaken?: () => vo
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 flex items-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand/30 transition hover:bg-brand-dark hover:shadow-xl"
+        className="fixed bottom-4 right-4 flex items-center gap-2 rounded-full bg-brand px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-brand/30 transition hover:bg-brand-dark hover:shadow-xl sm:bottom-6 sm:right-6 sm:px-5"
       >
         <MessageCircle size={18} />
-        Ask the copilot
+        <span className="hidden sm:inline">Ask the copilot</span>
       </button>
     );
   }
 
   return (
-    <div className="fixed bottom-6 right-6 flex h-[600px] w-[380px] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl">
+    <div className="fixed inset-x-4 bottom-4 top-20 flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl sm:inset-x-auto sm:bottom-6 sm:right-6 sm:top-auto sm:h-[600px] sm:w-[380px]">
       <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
         <div className="flex items-center gap-2.5">
           <HaxioMark size={32} />
