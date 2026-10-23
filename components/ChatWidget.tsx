@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { Bot, MessageCircle, X, Send } from "lucide-react";
+import { MessageCircle, X, Send } from "lucide-react";
+import HaxioMark from "./HaxioMark";
 import ToolCallView from "./ToolCallView";
 import type { SupportAgentMessage } from "@/lib/agent/support-agent";
 
@@ -47,9 +48,7 @@ export default function ChatWidget({ onActionTaken }: { onActionTaken?: () => vo
     <div className="fixed bottom-6 right-6 flex h-[600px] w-[380px] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl">
       <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">
-            <Bot size={16} />
-          </div>
+          <HaxioMark size={32} />
           <div>
             <div className="text-sm font-semibold text-neutral-900">Haxio</div>
             <div className="text-xs text-neutral-400">Acme Cloud · agent + RAG demo</div>

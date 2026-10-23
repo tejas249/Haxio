@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   Activity,
   AlertCircle,
-  Bot,
   Check,
   CircleOff,
   LogOut,
@@ -15,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import ChatWidget from "./ChatWidget";
+import HaxioMark from "./HaxioMark";
 import type { Account } from "@/lib/data/accounts";
 import type { Ticket } from "@/lib/data/tickets";
 import type { RefundApproval } from "@/lib/data/approvals";
@@ -145,9 +145,7 @@ export default function DashboardClient() {
     <div className="mx-auto max-w-5xl px-6 py-10">
       <header className="mb-8 flex items-start justify-between">
         <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand text-white shadow-sm shadow-brand/30">
-            <Bot size={18} />
-          </div>
+          <HaxioMark size={36} className="mt-0.5 shrink-0" />
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
               Support Dashboard

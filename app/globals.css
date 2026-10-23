@@ -4,13 +4,20 @@
   --background: #ffffff;
   --foreground: #171717;
 
-  /* Brand accent — indigo. Used for primary actions, links, and the
-     landing page; everything else stays on the neutral scale so the
-     accent actually reads as an accent. */
-  --brand: #4f46e5;
-  --brand-dark: #4338ca;
-  --brand-light: #eef2ff;
+  /* Brand accent: Flare Deep, the accessible (5.2:1 on white) shade of
+     the Haxio orange. Used for primary actions, links, and the landing
+     page; everything else stays on the neutral scale so the accent
+     actually reads as an accent. Full palette: public/brand/README.md */
+  --brand: #c2410c;
+  --brand-dark: #9a3412;
+  --brand-light: #fff1e8;
   --brand-foreground: #ffffff;
+
+  /* Logo colors: Ink (icon chip, wordmark) and Flare (the human ring,
+     accents on dark surfaces only; never text on white). */
+  --ink: #0b0f1a;
+  --ink-700: #1e2433;
+  --flare: #ff6b2c;
 }
 
 @theme inline {
@@ -20,6 +27,9 @@
   --color-brand-dark: var(--brand-dark);
   --color-brand-light: var(--brand-light);
   --color-brand-foreground: var(--brand-foreground);
+  --color-ink: var(--ink);
+  --color-ink-700: var(--ink-700);
+  --color-flare: var(--flare);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

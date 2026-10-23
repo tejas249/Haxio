@@ -1,4 +1,5 @@
 import Link from "next/link";
+import HaxioMark from "@/components/HaxioMark";
 import {
   ArrowRight,
   Bot,
@@ -49,9 +50,7 @@ export default function Home() {
     <main className="min-h-screen bg-white">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">
-            <Bot size={18} />
-          </div>
+          <HaxioMark size={32} />
           <span className="text-sm font-semibold text-neutral-900">Haxio</span>
         </div>
         <div className="flex items-center gap-3">

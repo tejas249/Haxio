@@ -1,0 +1,21 @@
+:root {
+  /* Haxio brand */
+  --hx-ink: #0b0f1a;
+  --hx-ink-700: #1e2433;
+  --hx-flare: #ff6b2c;            /* accent on dark + mark only */
+  --hx-flare-deep: #c2410c;       /* accent text/links/buttons on white */
+  --hx-flare-deep-hover: #9a3412;
+  --hx-flare-tint: #fff1e8;       /* chips, highlights */
+
+  /* Neutrals */
+  --hx-white: #ffffff;
+  --hx-neutral-50: #fafafa;
+  --hx-neutral-200: #e5e5e5;
+  --hx-neutral-400: #a3a3a3;
+  --hx-neutral-600: #525252;
+
+  /* Type */
+  --hx-font-display: "Bricolage Grotesque", "Geist", system-ui, sans-serif;
+  --hx-font-sans: "Geist", system-ui, sans-serif;
+  --hx-font-mono: "Geist Mono", ui-monospace, monospace;
+}

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Bot } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import HaxioMark from "@/components/HaxioMark";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -49,9 +50,7 @@ export default function LoginPage() {
         className="w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm"
       >
         <div className="mb-6 flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white shadow-sm shadow-brand/30">
-            <Bot size={17} />
-          </div>
+          <HaxioMark size={36} />
           <div>
             <div className="text-sm font-semibold text-neutral-900">Haxio</div>
             <div className="text-xs text-neutral-400">Support dashboard</div>
