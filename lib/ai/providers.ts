@@ -18,7 +18,7 @@ export function getChatModel(): LanguageModel {
   }
 
   if (provider === "groq") {
-    return groq(process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile");
+    return groq(process.env.GROQ_MODEL ?? "openai/gpt-oss-120b");
   }
 
   return anthropic(process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5-5");
