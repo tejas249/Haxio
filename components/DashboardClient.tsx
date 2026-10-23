@@ -2,12 +2,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Activity,
   AlertCircle,
+  AlertTriangle,
+  ArrowLeft,
   Check,
   CircleOff,
   LogOut,
+  RefreshCw,
   ShieldAlert,
   Ticket as TicketIcon,
   Users,
@@ -15,6 +19,7 @@ import {
 } from "lucide-react";
 import ChatWidget from "./ChatWidget";
 import HaxioMark from "./HaxioMark";
+import SiteFooter from "./SiteFooter";
 import type { Account } from "@/lib/data/accounts";
 import type { Ticket } from "@/lib/data/tickets";
 import type { RefundApproval } from "@/lib/data/approvals";
@@ -82,6 +87,7 @@ export default function DashboardClient() {
   const [approvals, setApprovals] = useState<RefundApproval[]>([]);
   const [agentRuns, setAgentRuns] = useState<AgentRun[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -91,24 +97,36 @@ export default function DashboardClient() {
     let ignore = false;
 
     (async () => {
-      const [accountsRes, ticketsRes, approvalsRes, agentRunsRes] = await Promise.all([
-        fetch("/api/accounts"),
-        fetch("/api/tickets"),
-        fetch("/api/approvals"),
-        fetch("/api/agent-runs"),
-      ]);
-      const [accountsData, ticketsData, approvalsData, agentRunsData] = await Promise.all([
-        accountsRes.json(),
-        ticketsRes.json(),
-        approvalsRes.json(),
-        agentRunsRes.json(),
-      ]);
-      if (ignore) return;
-      setAccounts(accountsData);
-      setTickets(ticketsData);
-      setApprovals(approvalsData);
-      setAgentRuns(agentRunsData);
-      setLoading(false);
+      setLoadError(null);
+      try {
+        const [accountsRes, ticketsRes, approvalsRes, agentRunsRes] = await Promise.all([
+          fetch("/api/accounts"),
+          fetch("/api/tickets"),
+          fetch("/api/approvals"),
+          fetch("/api/agent-runs"),
+        ]);
+        for (const res of [accountsRes, ticketsRes, approvalsRes, agentRunsRes]) {
+          if (!res.ok) throw new Error(`${res.url} responded with ${res.status}`);
+        }
+        const [accountsData, ticketsData, approvalsData, agentRunsData] = await Promise.all([
+          accountsRes.json(),
+          ticketsRes.json(),
+          approvalsRes.json(),
+          agentRunsRes.json(),
+        ]);
+        if (ignore) return;
+        setAccounts(accountsData);
+        setTickets(ticketsData);
+        setApprovals(approvalsData);
+        setAgentRuns(agentRunsData);
+      } catch {
+        if (ignore) return;
+        setLoadError(
+          "Couldn't load dashboard data. The database may be unreachable — try refreshing.",
+        );
+      } finally {
+        if (!ignore) setLoading(false);
+      }
     })();
 
     return () => {
@@ -142,8 +160,17 @@ export default function DashboardClient() {
   const pendingApprovals = approvals.filter((a) => a.status === "pending");
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
-      <header className="mb-8 flex items-start justify-between">
+    <div className="flex min-h-screen flex-col bg-neutral-50">
+      <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
+      <Link
+        href="/"
+        className="mb-5 inline-flex items-center gap-1.5 text-sm font-medium text-neutral-500 hover:text-neutral-700"
+      >
+        <ArrowLeft size={15} />
+        Back to Haxio
+      </Link>
+
+      <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-start gap-3">
           <HaxioMark size={36} className="mt-0.5 shrink-0" />
           <div>
@@ -164,6 +191,22 @@ export default function DashboardClient() {
           Log out
         </button>
       </header>
+
+      {loadError ? (
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={16} className="shrink-0" />
+            {loadError}
+          </div>
+          <button
+            onClick={refresh}
+            className="flex items-center gap-1.5 rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 shadow-sm transition hover:bg-red-100"
+          >
+            <RefreshCw size={13} />
+            Retry
+          </button>
+        </div>
+      ) : null}
 
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-6">
         <StatTile label="Accounts" value={accounts.length} icon={Users} />
@@ -188,7 +231,7 @@ export default function DashboardClient() {
             {approvals.map((a) => (
               <div
                 key={a.id}
-                className={`flex items-center justify-between rounded-xl border bg-white px-4 py-3 shadow-sm ${
+                className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-white px-4 py-3 shadow-sm ${
                   a.status === "pending" ? "border-amber-200" : "border-neutral-200"
                 }`}
               >
@@ -238,8 +281,8 @@ export default function DashboardClient() {
         <h2 className="mb-3 text-sm font-semibold tracking-tight text-neutral-700">
           Accounts
         </h2>
-        <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
+          <table className="w-full min-w-[640px] text-sm">
             <thead className="bg-neutral-50 text-left text-xs font-medium tracking-wide text-neutral-500">
               <tr>
                 <th className="px-4 py-2.5">ID</th>
@@ -285,8 +328,8 @@ export default function DashboardClient() {
         <h2 className="mb-3 text-sm font-semibold tracking-tight text-neutral-700">
           Tickets
         </h2>
-        <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
+          <table className="w-full min-w-[640px] text-sm">
             <thead className="bg-neutral-50 text-left text-xs font-medium tracking-wide text-neutral-500">
               <tr>
                 <th className="px-4 py-2.5">ID</th>
@@ -376,7 +419,9 @@ export default function DashboardClient() {
           </div>
         </section>
       ) : null}
+      </div>
 
+      <SiteFooter />
       <ChatWidget onActionTaken={refresh} />
     </div>
   );
