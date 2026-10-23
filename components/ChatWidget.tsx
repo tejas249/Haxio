@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { MessageCircle, X, Send } from "lucide-react";
+import { Bot, MessageCircle, X, Send } from "lucide-react";
 import ToolCallView from "./ToolCallView";
 import type { SupportAgentMessage } from "@/lib/agent/support-agent";
 
@@ -35,7 +35,7 @@ export default function ChatWidget({ onActionTaken }: { onActionTaken?: () => vo
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 flex items-center gap-2 rounded-full bg-neutral-900 px-5 py-3 text-sm font-medium text-white shadow-lg transition hover:bg-neutral-700"
+        className="fixed bottom-6 right-6 flex items-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand/30 transition hover:bg-brand-dark hover:shadow-xl"
       >
         <MessageCircle size={18} />
         Ask the copilot
@@ -46,9 +46,14 @@ export default function ChatWidget({ onActionTaken }: { onActionTaken?: () => vo
   return (
     <div className="fixed bottom-6 right-6 flex h-[600px] w-[380px] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl">
       <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
-        <div>
-          <div className="text-sm font-semibold text-neutral-900">DeskCopilot</div>
-          <div className="text-xs text-neutral-400">Acme Cloud · agent + RAG demo</div>
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">
+            <Bot size={16} />
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-neutral-900">DeskCopilot</div>
+            <div className="text-xs text-neutral-400">Acme Cloud · agent + RAG demo</div>
+          </div>
         </div>
         <button onClick={() => setOpen(false)} className="text-neutral-400 hover:text-neutral-700">
           <X size={18} />
@@ -63,7 +68,7 @@ export default function ChatWidget({ onActionTaken }: { onActionTaken?: () => vo
               <button
                 key={s}
                 onClick={() => submit(s)}
-                className="block w-full rounded-lg border border-neutral-200 px-3 py-2 text-left text-sm text-neutral-600 hover:bg-neutral-50"
+                className="block w-full rounded-lg border border-neutral-200 px-3 py-2 text-left text-sm text-neutral-600 transition hover:border-brand/30 hover:bg-brand-light hover:text-brand-dark"
               >
                 {s}
               </button>
@@ -76,7 +81,7 @@ export default function ChatWidget({ onActionTaken }: { onActionTaken?: () => vo
             <div
               className={
                 message.role === "user"
-                  ? "max-w-[85%] space-y-2 rounded-2xl bg-neutral-900 px-3 py-2 text-sm text-white"
+                  ? "max-w-[85%] space-y-2 rounded-2xl bg-brand px-3 py-2 text-sm text-white"
                   : "max-w-[90%] space-y-2"
               }
             >
@@ -123,12 +128,12 @@ export default function ChatWidget({ onActionTaken }: { onActionTaken?: () => vo
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about an account, a policy, anything…"
           disabled={status === "submitted" || status === "streaming"}
-          className="flex-1 rounded-full border border-neutral-200 px-4 py-2 text-sm outline-none focus:border-neutral-400 disabled:opacity-50"
+          className="flex-1 rounded-full border border-neutral-200 px-4 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15 disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={status === "submitted" || status === "streaming" || !input.trim()}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white disabled:opacity-40"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-sm shadow-brand/30 transition hover:bg-brand-dark disabled:opacity-40 disabled:shadow-none"
         >
           <Send size={16} />
         </button>

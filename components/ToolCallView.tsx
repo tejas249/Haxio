@@ -37,13 +37,13 @@ export default function ToolCallView({ part }: { part: ToolPart }) {
       className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-sm ${
         isError
           ? "border-red-200 bg-red-50 text-red-700"
-          : "border-neutral-200 bg-neutral-50 text-neutral-700"
+          : "border-brand/15 bg-brand-light text-neutral-700"
       }`}
     >
       {isRunning ? (
-        <Loader2 size={16} className="mt-0.5 shrink-0 animate-spin text-neutral-400" />
+        <Loader2 size={16} className="mt-0.5 shrink-0 animate-spin text-brand" />
       ) : (
-        <Icon size={16} className="mt-0.5 shrink-0 text-neutral-400" />
+        <Icon size={16} className="mt-0.5 shrink-0 text-brand" />
       )}
       <div className="min-w-0">
         <div className="font-medium">

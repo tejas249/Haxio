@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Bot } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,14 +35,22 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-neutral-50 px-6">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-neutral-50 px-6">
+      <Link
+        href="/"
+        className="mb-6 flex items-center gap-1.5 text-sm font-medium text-neutral-500 hover:text-neutral-700"
+      >
+        <ArrowLeft size={15} />
+        Back to DeskCopilot
+      </Link>
+
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm"
       >
-        <div className="mb-6 flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-900 text-white">
-            <Lock size={16} />
+        <div className="mb-6 flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white shadow-sm shadow-brand/30">
+            <Bot size={17} />
           </div>
           <div>
             <div className="text-sm font-semibold text-neutral-900">DeskCopilot</div>
@@ -55,7 +64,7 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoFocus
-          className="mb-3 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-neutral-400"
+          className="mb-3 w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15"
         />
 
         {error ? <p className="mb-3 text-sm text-red-600">{error}</p> : null}
@@ -63,7 +72,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={submitting || !password}
-          className="w-full rounded-lg bg-neutral-900 py-2 text-sm font-medium text-white disabled:opacity-40"
+          className="w-full rounded-full bg-brand py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand/30 transition hover:bg-brand-dark hover:shadow-md disabled:opacity-40 disabled:shadow-none"
         >
           {submitting ? "Signing in…" : "Sign in"}
         </button>

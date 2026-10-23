@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Activity,
   AlertCircle,
+  Bot,
   Check,
   CircleOff,
   LogOut,
@@ -19,18 +20,28 @@ import type { Ticket } from "@/lib/data/tickets";
 import type { RefundApproval } from "@/lib/data/approvals";
 import type { AgentRun } from "@/lib/data/agent-runs";
 
+const TILE_TONES = {
+  brand: "bg-brand-light text-brand",
+  amber: "bg-amber-50 text-amber-600",
+  red: "bg-red-50 text-red-600",
+} as const;
+
 function StatTile({
   label,
   value,
   icon: Icon,
+  tone = "brand",
 }: {
   label: string;
   value: number;
   icon: typeof Users;
+  tone?: keyof typeof TILE_TONES;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white px-4 py-3">
-      <Icon size={20} className="text-neutral-400" />
+    <div className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white px-4 py-3 shadow-sm transition hover:shadow-md">
+      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${TILE_TONES[tone]}`}>
+        <Icon size={18} />
+      </div>
       <div>
         <div className="text-2xl font-semibold text-neutral-900">{value}</div>
         <div className="text-xs text-neutral-500">{label}</div>
@@ -133,16 +144,23 @@ export default function DashboardClient() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <header className="mb-8 flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-neutral-900">Support Dashboard</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Acme Cloud · the agent below can look up these accounts, cite help docs, and
-            open tickets — refunds it proposes wait for approval right here.
-          </p>
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand text-white shadow-sm shadow-brand/30">
+            <Bot size={18} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
+              Support Dashboard
+            </h1>
+            <p className="mt-1 text-sm text-neutral-500">
+              Acme Cloud · the agent below can look up these accounts, cite help docs, and
+              open tickets — refunds it proposes wait for approval right here.
+            </p>
+          </div>
         </div>
         <button
           onClick={logout}
-          className="flex shrink-0 items-center gap-1.5 rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-50"
+          className="flex shrink-0 items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-600 shadow-sm transition hover:border-neutral-300 hover:bg-neutral-50"
         >
           <LogOut size={14} />
           Log out
@@ -151,27 +169,28 @@ export default function DashboardClient() {
 
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-6">
         <StatTile label="Accounts" value={accounts.length} icon={Users} />
-        <StatTile label="Past due" value={pastDue} icon={AlertCircle} />
-        <StatTile label="Suspended" value={suspended} icon={CircleOff} />
+        <StatTile label="Past due" value={pastDue} icon={AlertCircle} tone="amber" />
+        <StatTile label="Suspended" value={suspended} icon={CircleOff} tone="red" />
         <StatTile label="Open tickets" value={openTickets} icon={TicketIcon} />
         <StatTile
           label="Pending approvals"
           value={pendingApprovals.length}
           icon={ShieldAlert}
+          tone={pendingApprovals.length > 0 ? "amber" : "brand"}
         />
         <StatTile label="Agent runs" value={agentRuns.length} icon={Activity} />
       </div>
 
       {approvals.length > 0 ? (
         <section className="mb-8">
-          <h2 className="mb-3 text-sm font-semibold text-neutral-700">
+          <h2 className="mb-3 text-sm font-semibold tracking-tight text-neutral-700">
             Refund approvals
           </h2>
           <div className="space-y-2">
             {approvals.map((a) => (
               <div
                 key={a.id}
-                className={`flex items-center justify-between rounded-xl border bg-white px-4 py-3 ${
+                className={`flex items-center justify-between rounded-xl border bg-white px-4 py-3 shadow-sm ${
                   a.status === "pending" ? "border-amber-200" : "border-neutral-200"
                 }`}
               >
@@ -186,7 +205,7 @@ export default function DashboardClient() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs ${STATUS_STYLES[a.status]}`}
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[a.status]}`}
                   >
                     {a.status}
                   </span>
@@ -195,7 +214,7 @@ export default function DashboardClient() {
                       <button
                         onClick={() => resolveApproval(a.id, "approve")}
                         disabled={resolvingId === a.id}
-                        className="flex items-center gap-1 rounded-full bg-green-600 px-3 py-1 text-xs font-medium text-white disabled:opacity-40"
+                        className="flex items-center gap-1 rounded-full bg-green-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm shadow-green-600/30 transition hover:bg-green-700 hover:shadow-md disabled:opacity-40 disabled:shadow-none"
                       >
                         <Check size={14} />
                         Approve
@@ -203,7 +222,7 @@ export default function DashboardClient() {
                       <button
                         onClick={() => resolveApproval(a.id, "deny")}
                         disabled={resolvingId === a.id}
-                        className="flex items-center gap-1 rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600 disabled:opacity-40"
+                        className="flex items-center gap-1 rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-600 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
                       >
                         <X size={14} />
                         Deny
@@ -218,32 +237,34 @@ export default function DashboardClient() {
       ) : null}
 
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-semibold text-neutral-700">Accounts</h2>
-        <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+        <h2 className="mb-3 text-sm font-semibold tracking-tight text-neutral-700">
+          Accounts
+        </h2>
+        <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-left text-xs text-neutral-500">
+            <thead className="bg-neutral-50 text-left text-xs font-medium tracking-wide text-neutral-500">
               <tr>
-                <th className="px-4 py-2">ID</th>
-                <th className="px-4 py-2">Company</th>
-                <th className="px-4 py-2">Plan</th>
-                <th className="px-4 py-2">Status</th>
-                <th className="px-4 py-2">Open invoice</th>
+                <th className="px-4 py-2.5">ID</th>
+                <th className="px-4 py-2.5">Company</th>
+                <th className="px-4 py-2.5">Plan</th>
+                <th className="px-4 py-2.5">Status</th>
+                <th className="px-4 py-2.5">Open invoice</th>
               </tr>
             </thead>
             <tbody>
               {accounts.map((a) => (
-                <tr key={a.id} className="border-t border-neutral-100">
-                  <td className="px-4 py-2 font-mono text-xs text-neutral-500">{a.id}</td>
-                  <td className="px-4 py-2 text-neutral-900">{a.company}</td>
-                  <td className="px-4 py-2 capitalize text-neutral-500">{a.plan}</td>
-                  <td className="px-4 py-2">
+                <tr key={a.id} className="border-t border-neutral-100 transition hover:bg-neutral-50/70">
+                  <td className="px-4 py-2.5 font-mono text-xs text-neutral-500">{a.id}</td>
+                  <td className="px-4 py-2.5 font-medium text-neutral-900">{a.company}</td>
+                  <td className="px-4 py-2.5 capitalize text-neutral-500">{a.plan}</td>
+                  <td className="px-4 py-2.5">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs ${STATUS_STYLES[a.status]}`}
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[a.status]}`}
                     >
                       {a.status.replace("_", " ")}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-neutral-500">
+                  <td className="px-4 py-2.5 text-neutral-500">
                     {a.openInvoiceCents > 0
                       ? `$${(a.openInvoiceCents / 100).toFixed(2)}`
                       : "—"}
@@ -263,34 +284,36 @@ export default function DashboardClient() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-neutral-700">Tickets</h2>
-        <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+        <h2 className="mb-3 text-sm font-semibold tracking-tight text-neutral-700">
+          Tickets
+        </h2>
+        <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-left text-xs text-neutral-500">
+            <thead className="bg-neutral-50 text-left text-xs font-medium tracking-wide text-neutral-500">
               <tr>
-                <th className="px-4 py-2">ID</th>
-                <th className="px-4 py-2">Account</th>
-                <th className="px-4 py-2">Subject</th>
-                <th className="px-4 py-2">Status</th>
-                <th className="px-4 py-2">Refund</th>
+                <th className="px-4 py-2.5">ID</th>
+                <th className="px-4 py-2.5">Account</th>
+                <th className="px-4 py-2.5">Subject</th>
+                <th className="px-4 py-2.5">Status</th>
+                <th className="px-4 py-2.5">Refund</th>
               </tr>
             </thead>
             <tbody>
               {tickets.map((t) => (
-                <tr key={t.id} className="border-t border-neutral-100">
-                  <td className="px-4 py-2 font-mono text-xs text-neutral-500">{t.id}</td>
-                  <td className="px-4 py-2 font-mono text-xs text-neutral-500">
+                <tr key={t.id} className="border-t border-neutral-100 transition hover:bg-neutral-50/70">
+                  <td className="px-4 py-2.5 font-mono text-xs text-neutral-500">{t.id}</td>
+                  <td className="px-4 py-2.5 font-mono text-xs text-neutral-500">
                     {t.accountId}
                   </td>
-                  <td className="px-4 py-2 text-neutral-900">{t.subject}</td>
-                  <td className="px-4 py-2">
+                  <td className="px-4 py-2.5 font-medium text-neutral-900">{t.subject}</td>
+                  <td className="px-4 py-2.5">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs ${STATUS_STYLES[t.status]}`}
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[t.status]}`}
                     >
                       {t.status}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-neutral-500">
+                  <td className="px-4 py-2.5 text-neutral-500">
                     {t.refundIssuedCents ? `$${(t.refundIssuedCents / 100).toFixed(2)}` : "—"}
                   </td>
                 </tr>
@@ -309,18 +332,20 @@ export default function DashboardClient() {
 
       {agentRuns.length > 0 ? (
         <section className="mt-8">
-          <h2 className="mb-3 text-sm font-semibold text-neutral-700">Agent activity</h2>
+          <h2 className="mb-3 text-sm font-semibold tracking-tight text-neutral-700">
+            Agent activity
+          </h2>
           <div className="space-y-2">
             {agentRuns.map((run) => (
               <div
                 key={run.id}
-                className="rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm"
+                className="rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm"
               >
                 <div className="mb-1 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {run.outcome ? (
                       <span
-                        className={`rounded-full px-2 py-0.5 text-xs ${
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                           STATUS_STYLES[run.outcome] ?? "bg-neutral-100 text-neutral-600"
                         }`}
                       >
@@ -330,7 +355,7 @@ export default function DashboardClient() {
                     {run.toolCalls.map((call, i) => (
                       <span
                         key={i}
-                        className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-500"
+                        className="rounded-full bg-brand-light px-2 py-0.5 text-xs font-medium text-brand-dark"
                       >
                         {call.name}
                       </span>
