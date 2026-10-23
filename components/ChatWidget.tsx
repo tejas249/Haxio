@@ -51,7 +51,7 @@ export default function ChatWidget({ onActionTaken }: { onActionTaken?: () => vo
             <Bot size={16} />
           </div>
           <div>
-            <div className="text-sm font-semibold text-neutral-900">DeskCopilot</div>
+            <div className="text-sm font-semibold text-neutral-900">Haxio</div>
             <div className="text-xs text-neutral-400">Acme Cloud · agent + RAG demo</div>
           </div>
         </div>

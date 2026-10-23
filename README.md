@@ -1,4 +1,4 @@
-# DeskCopilot
+# Haxio
 
 A demo support agent for a fictional SaaS ("Acme Cloud"), built to show three
 things together: Next.js App Router, the Vercel AI SDK's agent/tool-calling
@@ -69,7 +69,7 @@ Postgres is on Neon. If you have the [Neon CLI](https://neon.com/docs/cli/instal
 and are signed in:
 
 ```bash
-neon link --org-id <your-org-id> --project-name DeskCopilot --region-id aws-us-east-2
+neon link --org-id <your-org-id> --project-name Haxio --region-id aws-us-east-2
 npm run db:setup   # applies db/schema.sql, then db/seed.sql
 npm run db:embed   # downloads the local model once, embeds lib/data/docs/*.md
 ```

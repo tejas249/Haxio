@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DeskCopilot",
+  title: "Haxio",
   description: "Agent + RAG support copilot demo built on Next.js and the Vercel AI SDK",
 };
 

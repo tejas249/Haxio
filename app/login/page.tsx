@@ -41,7 +41,7 @@ export default function LoginPage() {
         className="mb-6 flex items-center gap-1.5 text-sm font-medium text-neutral-500 hover:text-neutral-700"
       >
         <ArrowLeft size={15} />
-        Back to DeskCopilot
+        Back to Haxio
       </Link>
 
       <form
@@ -53,7 +53,7 @@ export default function LoginPage() {
             <Bot size={17} />
           </div>
           <div>
-            <div className="text-sm font-semibold text-neutral-900">DeskCopilot</div>
+            <div className="text-sm font-semibold text-neutral-900">Haxio</div>
             <div className="text-xs text-neutral-400">Support dashboard</div>
           </div>
         </div>

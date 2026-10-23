@@ -52,7 +52,7 @@ export default function Home() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">
             <Bot size={18} />
           </div>
-          <span className="text-sm font-semibold text-neutral-900">DeskCopilot</span>
+          <span className="text-sm font-semibold text-neutral-900">Haxio</span>
         </div>
         <div className="flex items-center gap-3">
           <a
@@ -84,7 +84,7 @@ export default function Home() {
           <span className="text-brand">actually does things</span>
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-base text-neutral-500 sm:text-lg">
-          DeskCopilot is a demo support desk for a fictional SaaS. The agent
+          Haxio is a demo support desk for a fictional SaaS. The agent
           searches real help docs, looks up accounts, opens tickets, and
           proposes refunds — every action visible, every refund held for
           human approval.
