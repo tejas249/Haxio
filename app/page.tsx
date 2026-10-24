@@ -78,7 +78,7 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
           <a
-            href="https://github.com/tejas249/deskcopilot"
+            href="https://github.com/tejas249/Haxio"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900"
@@ -129,7 +129,7 @@ export default function Home() {
               <ArrowRight size={16} />
             </Link>
             <a
-              href="https://github.com/tejas249/deskcopilot"
+              href="https://github.com/tejas249/Haxio"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-6 py-3 text-sm font-semibold text-neutral-700 shadow-sm transition hover:border-neutral-300 hover:bg-neutral-50"

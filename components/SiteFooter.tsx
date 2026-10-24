@@ -35,7 +35,7 @@ export default function SiteFooter() {
               Project
             </span>
             <a
-              href="https://github.com/tejas249/deskcopilot"
+              href="https://github.com/tejas249/Haxio"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 text-neutral-600 hover:text-neutral-900"
