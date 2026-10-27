@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
   // platform binary with a dynamic require Next's file tracer can't see,
   // so it still gets dropped from the deployed function unless forced in.
   outputFileTracingIncludes: {
-    "/api/chat": ["./node_modules/onnxruntime-node/bin/**/*"],
+    "/api/chat": ["./node_modules/onnxruntime-node/**/*"],
   },
   experimental: {
     // Explicit, even though "security" is already the default — keeps
