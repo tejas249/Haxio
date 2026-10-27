@@ -2,6 +2,10 @@ import { createAgentUIStreamResponse } from "ai";
 import { supportAgent } from "@/lib/agent/support-agent";
 import { createAgentRun, type AgentToolCallLog } from "@/lib/data/agent-runs";
 
+// Generous: the local embedding model can take a while to download on a
+// cold serverless instance (first searchDocs call after a deploy/idle).
+export const maxDuration = 60;
+
 interface IncomingPart {
   type: string;
   text?: string;

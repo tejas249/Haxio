@@ -6,7 +6,9 @@ const MODEL_ID = "onnx-community/all-MiniLM-L6-v2-ONNX";
 
 // Cache the downloaded model under the project root instead of inside
 // node_modules, so it survives a `rm -rf node_modules && npm install`.
-env.cacheDir = "./.cache/transformers/";
+// On Vercel the deployment filesystem is read-only except /tmp, so cache
+// there instead — the model just re-downloads on cold start.
+env.cacheDir = process.env.VERCEL ? "/tmp/transformers-cache/" : "./.cache/transformers/";
 
 // Singleton loader, cached on `globalThis` so Next's dev-mode module
 // reloads don't reload the (~90MB) model on every edit — same reasoning
