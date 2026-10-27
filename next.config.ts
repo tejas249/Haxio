@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
   // in Vercel's serverless runtime, so keep it external and let Node
   // require it from node_modules at runtime instead.
   serverExternalPackages: ["@huggingface/transformers", "onnxruntime-node"],
+  // The above keeps the require external, but onnxruntime-node picks its
+  // platform binary with a dynamic require Next's file tracer can't see,
+  // so it still gets dropped from the deployed function unless forced in.
+  outputFileTracingIncludes: {
+    "/api/chat": ["./node_modules/onnxruntime-node/bin/**/*"],
+  },
   experimental: {
     // Explicit, even though "security" is already the default — keeps
     // future advisory reminders on during `next dev`/`next build`.
