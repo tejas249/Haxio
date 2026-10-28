@@ -1,6 +1,7 @@
 import { createAgentUIStreamResponse } from "ai";
 import { supportAgent } from "@/lib/agent/support-agent";
 import { createAgentRun, type AgentToolCallLog } from "@/lib/data/agent-runs";
+import { parseJsonBody } from "@/lib/api/handle-db-error";
 
 // Generous: the local embedding model can take a while to download on a
 // cold serverless instance (first searchDocs call after a deploy/idle).
@@ -24,7 +25,11 @@ function extractText(parts: IncomingPart[] | undefined): string {
 }
 
 export async function POST(req: Request) {
-  const { messages } = (await req.json()) as { messages: IncomingMessage[] };
+  const body = await parseJsonBody<{ messages?: IncomingMessage[] }>(req);
+  if (!body || !Array.isArray(body.messages)) {
+    return Response.json({ error: "Request body must include a messages array" }, { status: 400 });
+  }
+  const { messages } = body;
   const startedAt = Date.now();
   const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
 

@@ -25,12 +25,19 @@ function describeInput(toolType: string, input: unknown): string {
   return "";
 }
 
+function semanticError(output: unknown): string | null {
+  if (!output || typeof output !== "object") return null;
+  const err = (output as Record<string, unknown>).error;
+  return typeof err === "string" ? err : null;
+}
+
 export default function ToolCallView({ part }: { part: ToolPart }) {
   const meta = TOOL_META[part.type] ?? { label: part.type, icon: Search };
   const Icon = meta.icon;
   const detail = describeInput(part.type, part.input);
   const isRunning = part.state === "input-streaming" || part.state === "input-available";
-  const isError = part.state === "output-error";
+  const toolError = semanticError(part.output);
+  const isError = part.state === "output-error" || toolError !== null;
 
   return (
     <div
@@ -50,13 +57,15 @@ export default function ToolCallView({ part }: { part: ToolPart }) {
           {meta.label}
           {detail ? <span className="font-normal text-neutral-500"> — {detail}</span> : null}
         </div>
-        {part.state === "output-available" && part.output ? (
+        {part.state === "output-available" && part.output && !toolError ? (
           <pre className="mt-1 max-w-full overflow-x-auto whitespace-pre-wrap text-xs text-neutral-500">
             {JSON.stringify(part.output, null, 2)}
           </pre>
         ) : null}
         {isError ? (
-          <div className="mt-1 text-xs text-red-600">{part.errorText ?? "Tool call failed"}</div>
+          <div className="mt-1 text-xs text-red-600">
+            {part.errorText ?? toolError ?? "Tool call failed"}
+          </div>
         ) : null}
       </div>
     </div>

@@ -31,6 +31,8 @@ export default function LoginPage() {
       }
       router.push("/dashboard");
       router.refresh();
+    } catch {
+      setError("Network error — check your connection and try again.");
     } finally {
       setSubmitting(false);
     }

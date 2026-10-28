@@ -1,7 +1,9 @@
 import { checkPassword, createSessionValue, SESSION_COOKIE } from "@/lib/auth/session";
+import { parseJsonBody } from "@/lib/api/handle-db-error";
 
 export async function POST(req: Request) {
-  const { password } = await req.json();
+  const body = await parseJsonBody<{ password?: string }>(req);
+  const password = body?.password;
 
   if (typeof password !== "string" || !checkPassword(password)) {
     return Response.json({ error: "Incorrect password" }, { status: 401 });

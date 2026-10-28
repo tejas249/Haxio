@@ -55,7 +55,13 @@ Rules:
         description: z.string(),
         priority: z.enum(["low", "normal", "high"]).default("normal"),
       }),
-      execute: async (input) => await createTicket(input),
+      execute: async (input) => {
+        const account = await getAccount(input.accountId);
+        if (!account) {
+          return { error: `No account found with ID ${input.accountId}` };
+        }
+        return await createTicket(input);
+      },
     }),
 
     issueRefund: tool({

@@ -133,8 +133,14 @@ export default function DashboardClient() {
   const [approvals, setApprovals] = useState<RefundApproval[]>([]);
   const [agentRuns, setAgentRuns] = useState<AgentRun[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [resolvingId, setResolvingId] = useState<string | null>(null);
+  const [resolving, setResolving] = useState<{ id: string; action: "approve" | "deny" } | null>(
+    null,
+  );
+  const [resolveError, setResolveError] = useState<string | null>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
@@ -144,6 +150,7 @@ export default function DashboardClient() {
 
     (async () => {
       setLoadError(null);
+      setRefreshing(true);
       try {
         const [accountsRes, ticketsRes, approvalsRes, agentRunsRes] = await Promise.all([
           fetch("/api/accounts"),
@@ -151,7 +158,12 @@ export default function DashboardClient() {
           fetch("/api/approvals"),
           fetch("/api/agent-runs"),
         ]);
-        for (const res of [accountsRes, ticketsRes, approvalsRes, agentRunsRes]) {
+        const responses = [accountsRes, ticketsRes, approvalsRes, agentRunsRes];
+        if (responses.some((res) => res.status === 401)) {
+          router.push("/login");
+          return;
+        }
+        for (const res of responses) {
           if (!res.ok) throw new Error(`${res.url} responded with ${res.status}`);
         }
         const [accountsData, ticketsData, approvalsData, agentRunsData] = await Promise.all([
@@ -171,33 +183,51 @@ export default function DashboardClient() {
           "Couldn't load dashboard data. The database may be unreachable — try refreshing.",
         );
       } finally {
-        if (!ignore) setLoading(false);
+        if (!ignore) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     })();
 
     return () => {
       ignore = true;
     };
-  }, [refreshKey]);
+  }, [refreshKey, router]);
 
   const resolveApproval = async (id: string, action: "approve" | "deny") => {
-    setResolvingId(id);
+    setResolving({ id, action });
+    setResolveError(null);
     try {
-      await fetch(`/api/approvals/${id}`, {
+      const res = await fetch(`/api/approvals/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? `Request failed with status ${res.status}`);
+      }
       refresh();
+    } catch (err) {
+      setResolveError(err instanceof Error ? err.message : "Couldn't update the approval.");
     } finally {
-      setResolvingId(null);
+      setResolving(null);
     }
   };
 
   const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-    router.refresh();
+    setLoggingOut(true);
+    setLogoutError(null);
+    try {
+      const res = await fetch("/api/auth/logout", { method: "POST" });
+      if (!res.ok) throw new Error(`Logout failed with status ${res.status}`);
+      router.push("/login");
+      router.refresh();
+    } catch {
+      setLoggingOut(false);
+      setLogoutError("Couldn't log out — check your connection and try again.");
+    }
   };
 
   const suspended = accounts.filter((a) => a.status === "suspended").length;
@@ -227,13 +257,19 @@ export default function DashboardClient() {
               <ArrowLeft size={13} />
               Back to Haxio
             </Link>
-            <button
-              onClick={logout}
-              className="flex shrink-0 items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-600 shadow-sm transition hover:border-neutral-300 hover:bg-neutral-50"
-            >
-              <LogOut size={14} />
-              Log out
-            </button>
+            <div className="flex flex-col items-end gap-1">
+              <button
+                onClick={logout}
+                disabled={loggingOut}
+                className="flex shrink-0 items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-600 shadow-sm transition hover:border-neutral-300 hover:bg-neutral-50 disabled:opacity-60"
+              >
+                <LogOut size={14} className={loggingOut ? "animate-pulse" : ""} />
+                {loggingOut ? "Logging out…" : "Log out"}
+              </button>
+              {logoutError ? (
+                <span className="text-xs text-red-600">{logoutError}</span>
+              ) : null}
+            </div>
           </div>
         </div>
       </header>
@@ -257,10 +293,11 @@ export default function DashboardClient() {
           </div>
           <button
             onClick={refresh}
-            className="flex items-center gap-1.5 rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 shadow-sm transition hover:bg-red-100"
+            disabled={refreshing}
+            className="flex items-center gap-1.5 rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 shadow-sm transition hover:bg-red-100 disabled:opacity-60"
           >
-            <RefreshCw size={13} />
-            Retry
+            <RefreshCw size={13} className={refreshing ? "animate-spin" : ""} />
+            {refreshing ? "Retrying…" : "Retry"}
           </button>
         </div>
       ) : null}
@@ -283,6 +320,12 @@ export default function DashboardClient() {
       {approvals.length > 0 ? (
         <section className="mb-8">
           <SectionHeading icon={ShieldAlert} title="Refund approvals" />
+          {resolveError ? (
+            <div className="mb-2 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+              <AlertTriangle size={14} className="shrink-0" />
+              {resolveError}
+            </div>
+          ) : null}
           <div className="space-y-2">
             {approvals.map((a) => (
               <div
@@ -312,19 +355,37 @@ export default function DashboardClient() {
                     <>
                       <button
                         onClick={() => resolveApproval(a.id, "approve")}
-                        disabled={resolvingId === a.id}
+                        disabled={resolving?.id === a.id}
                         className="flex items-center gap-1 rounded-full bg-green-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm shadow-green-600/30 transition hover:bg-green-700 hover:shadow-md disabled:opacity-40 disabled:shadow-none"
                       >
-                        <Check size={14} />
-                        Approve
+                        <Check
+                          size={14}
+                          className={
+                            resolving?.id === a.id && resolving.action === "approve"
+                              ? "animate-pulse"
+                              : ""
+                          }
+                        />
+                        {resolving?.id === a.id && resolving.action === "approve"
+                          ? "Approving…"
+                          : "Approve"}
                       </button>
                       <button
                         onClick={() => resolveApproval(a.id, "deny")}
-                        disabled={resolvingId === a.id}
+                        disabled={resolving?.id === a.id}
                         className="flex items-center gap-1 rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-600 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
                       >
-                        <X size={14} />
-                        Deny
+                        <X
+                          size={14}
+                          className={
+                            resolving?.id === a.id && resolving.action === "deny"
+                              ? "animate-pulse"
+                              : ""
+                          }
+                        />
+                        {resolving?.id === a.id && resolving.action === "deny"
+                          ? "Denying…"
+                          : "Deny"}
                       </button>
                     </>
                   ) : null}

@@ -1,5 +1,6 @@
 import { connection } from "next/server";
 import { listTickets } from "@/lib/data/tickets";
+import { withDbError } from "@/lib/api/handle-db-error";
 
 // `connection()` forces this GET handler to run at request time instead
 // of being prerendered once at build time. Cache Components' static
@@ -8,5 +9,5 @@ import { listTickets } from "@/lib/data/tickets";
 // static shell.
 export async function GET() {
   await connection();
-  return Response.json(await listTickets());
+  return withDbError(() => listTickets());
 }

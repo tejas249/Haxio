@@ -1,9 +1,11 @@
 import { getApproval, resolveApproval } from "@/lib/data/approvals";
 import { attachRefundToTicket } from "@/lib/data/tickets";
+import { parseJsonBody } from "@/lib/api/handle-db-error";
 
 export async function PATCH(req: Request, ctx: RouteContext<"/api/approvals/[id]">) {
   const { id } = await ctx.params;
-  const { action } = await req.json();
+  const body = await parseJsonBody<{ action?: string }>(req);
+  const action = body?.action;
 
   if (action !== "approve" && action !== "deny") {
     return Response.json(
@@ -12,24 +14,32 @@ export async function PATCH(req: Request, ctx: RouteContext<"/api/approvals/[id]
     );
   }
 
-  const approval = await getApproval(id);
-  if (!approval) {
-    return Response.json({ error: `No approval found with ID ${id}` }, { status: 404 });
-  }
-  if (approval.status !== "pending") {
+  try {
+    const approval = await getApproval(id);
+    if (!approval) {
+      return Response.json({ error: `No approval found with ID ${id}` }, { status: 404 });
+    }
+    if (approval.status !== "pending") {
+      return Response.json(
+        { error: `Approval ${id} is already ${approval.status}` },
+        { status: 409 },
+      );
+    }
+
+    const resolved = await resolveApproval(id, action === "approve" ? "approved" : "denied");
+
+    // Only a real approval moves money (attaches the refund to the ticket).
+    // A denial just records the decision — nothing on the ticket changes.
+    if (resolved?.status === "approved" && resolved.ticketId) {
+      await attachRefundToTicket(resolved.ticketId, resolved.amountCents);
+    }
+
+    return Response.json(resolved);
+  } catch (err) {
+    console.error("Failed to resolve approval:", err);
     return Response.json(
-      { error: `Approval ${id} is already ${approval.status}` },
-      { status: 409 },
+      { error: "Database unavailable, try again shortly." },
+      { status: 503 },
     );
   }
-
-  const resolved = await resolveApproval(id, action === "approve" ? "approved" : "denied");
-
-  // Only a real approval moves money (attaches the refund to the ticket).
-  // A denial just records the decision — nothing on the ticket changes.
-  if (resolved?.status === "approved" && resolved.ticketId) {
-    await attachRefundToTicket(resolved.ticketId, resolved.amountCents);
-  }
-
-  return Response.json(resolved);
 }
