@@ -33,7 +33,7 @@ export default function ChatWidget({ onActionTaken }: { onActionTaken?: () => vo
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
-  const { messages, sendMessage, status, error } = useChat<SupportAgentMessage>({
+  const { messages, sendMessage, status, error, regenerate } = useChat<SupportAgentMessage>({
     // A fixed id avoids useChat generating a random one during the
     // server-rendered static shell (Cache Components flags Math.random()
     // outside a request-time boundary); one visitor per session is fine
@@ -148,11 +148,14 @@ export default function ChatWidget({ onActionTaken }: { onActionTaken?: () => vo
         {status === "submitted" ? <TypingIndicator /> : null}
 
         {error ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-            The agent ran into a problem. The AI SDK withholds the exact
-            server-side error from the client by default — check the terminal
-            running `npm run dev` for the real cause (usually a missing or
-            invalid API key in .env.local).
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+            <span>Something went wrong on our end. Please try again.</span>
+            <button
+              onClick={() => regenerate()}
+              className="shrink-0 rounded-full border border-red-200 bg-white px-2.5 py-1 font-semibold text-red-700 transition hover:bg-red-100"
+            >
+              Try again
+            </button>
           </div>
         ) : null}
 
