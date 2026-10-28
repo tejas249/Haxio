@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Code2 } from "lucide-react";
 import HaxioMark from "./HaxioMark";
 
 const YEAR = new Date().getFullYear();
@@ -14,7 +13,7 @@ export default function SiteFooter() {
             <span className="text-sm font-semibold text-neutral-900">Haxio</span>
           </Link>
           <p className="mt-2 text-xs text-neutral-400">
-            A portfolio demo — Acme Cloud is fictional, data resets on request.
+            An AI support agent for SaaS teams — Acme Cloud is the sample workspace.
           </p>
         </div>
 
@@ -27,22 +26,19 @@ export default function SiteFooter() {
               Overview
             </Link>
             <Link href="/login" className="text-neutral-600 hover:text-neutral-900">
-              Live demo
+              Sign in
             </Link>
           </div>
           <div className="flex flex-col gap-2">
             <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-              Project
+              Resources
             </span>
-            <a
-              href="https://github.com/tejas249/Haxio"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-neutral-600 hover:text-neutral-900"
-            >
-              <Code2 size={14} />
-              Source on GitHub
-            </a>
+            <Link href="/#features" className="text-neutral-600 hover:text-neutral-900">
+              Features
+            </Link>
+            <Link href="/#how-it-works" className="text-neutral-600 hover:text-neutral-900">
+              How it works
+            </Link>
           </div>
         </div>
       </div>

@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const title = "Haxio — a support agent that actually does things";
 const description =
-  "Agent + RAG support copilot demo: a tool-calling AI agent that searches real help docs, looks up accounts, opens tickets, and proposes refunds — built on Next.js and the Vercel AI SDK.";
+  "Haxio is an AI support agent that searches your help docs, looks up accounts, opens tickets, and proposes refunds — every action visible, every refund held for human approval.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

@@ -5,7 +5,6 @@ import ChatMockup from "@/components/ChatMockup";
 import {
   ArrowRight,
   Bot,
-  Code2,
   Database,
   MessageSquare,
   ShieldCheck,
@@ -91,20 +90,11 @@ export default function Home() {
             <a href="#stack" className="hover:text-neutral-900">Stack</a>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3">
-            <a
-              href="https://github.com/tejas249/Haxio"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900"
-            >
-              <Code2 size={16} />
-              <span className="hidden sm:inline">Source</span>
-            </a>
             <Link
               href="/login"
               className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-700"
             >
-              View demo
+              Sign in
             </Link>
           </div>
         </div>
@@ -131,27 +121,24 @@ export default function Home() {
               <span className="text-brand">actually does things</span>
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base text-neutral-500 sm:text-lg lg:mx-0">
-              Haxio is a demo support desk for a fictional SaaS. The agent
-              searches real help docs, looks up accounts, opens tickets, and
-              proposes refunds — every action visible, every refund held for
-              human approval.
+              Haxio is an AI support agent for SaaS teams. It searches your
+              help docs, looks up accounts, opens tickets, and proposes
+              refunds — every action visible, every refund held for human
+              approval.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               <Link
                 href="/login"
                 className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-brand/30 transition hover:bg-brand-dark hover:shadow-md"
               >
-                View live demo
+                Sign in
                 <ArrowRight size={16} />
               </Link>
               <a
-                href="https://github.com/tejas249/Haxio"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="#how-it-works"
                 className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-6 py-3 text-sm font-semibold text-neutral-700 shadow-sm transition hover:border-neutral-300 hover:bg-neutral-50"
               >
-                <Code2 size={16} />
-                View source
+                See how it works
               </a>
             </div>
           </div>
@@ -245,14 +232,14 @@ export default function Home() {
             See the agent work, live
           </h2>
           <p className="max-w-md text-sm text-neutral-300">
-            Log in with the demo password and watch it search, look things up,
-            and open tickets — in real time.
+            Sign in and watch it search, look things up, and open tickets —
+            in real time.
           </p>
           <Link
             href="/login"
             className="mt-2 inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-brand/30 transition hover:bg-brand-dark hover:shadow-md"
           >
-            View live demo
+            Sign in
             <ArrowRight size={16} />
           </Link>
         </div>

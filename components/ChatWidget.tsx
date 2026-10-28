@@ -75,7 +75,7 @@ export default function ChatWidget({ onActionTaken }: { onActionTaken?: () => vo
           </div>
           <div>
             <div className="text-sm font-semibold text-neutral-900">Haxio</div>
-            <div className="text-xs text-neutral-400">Acme Cloud · agent + RAG demo</div>
+            <div className="text-xs text-neutral-400">Acme Cloud · support workspace</div>
           </div>
         </div>
         <button
